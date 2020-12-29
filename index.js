@@ -56,7 +56,7 @@ client.on('message', (msg) => {
 
             case "code":
 
-                msg.channel.send("Check my source code at GH(GitHub)\n;-)");
+                msg.channel.send("Check my source code at GH(GitHub)\n;-) https://https://github.com/Nafi-Amaan-Hossain/discord-bot-js/");
 
                 break;
 
