@@ -1,4 +1,5 @@
-[{
+[//Jokes from https://github.com/15Dkatz/official_joke_api (No LICENSE), until day of initial commit 
+	{
 		"id": 1,
 		"type": "general",
 		"setup": "What did the fish say when it hit the wall?",
