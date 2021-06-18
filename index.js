@@ -1,14 +1,12 @@
 const Discord = require('discord.js');
-const https = require('https');
 const client = new Discord.Client();
 const botimg = 'https://vectr.com/tmp/d1tfTqAzBR/a1gpoJghMA.png?width=640&height=640&select=a1gpoJghMApage0'
-const bot_pr = '$$'
+const bot_prefix = '$$'
 const botname = 'TesteeQ'
 const {
   randomJoke, randomProgrammingJoke, randomKnockJoke,  randomGeneralJoke
   } = require('./jokesvalidator');
-
-
+const wikitldr = require('wikipedia-tldr')
 
  
 /*Make sure to add user end guide in this helpEmbed constant once you add a new feature. DO NOT FORGET!!*/
@@ -18,30 +16,30 @@ const helpEmbed = new Discord.MessageEmbed()
     .setTitle(`${botname} commands`)
     .setAuthor(`${botname}, smartly me:`, botimg, 'https://discord.gg')
     .setDescription(`Usage guide to ${botname}`)
-    .addField('$$help-', 'Help and info', true)
-    .addField('$$careless-', 'Make me act careless', true)
-    .addField('$$code-', 'Understand my psycology and physiology.', true)
-    .addField('$$madeof-', 'Know my anatomy! How I\'m created.', true)
-    .addField('$$joke-', 'Send a random joke! Forgive me if some thing is lame!', true)
-    .setFooter('Happy \'Discording\'!! :wink:', botimg)
+    .addField('$$help', 'Help and info', true)
+    .addField('$$careless', 'Make me act careless', true)
+    .addField('$$code', 'Understand my psychology and why I\'m this way.', true)
+    .addField('$$madeof', 'Know my anatomy! How I\'m created.', true)
+    .addField('$$joke', 'Send a random joke! Forgive me if some thing is lame!', true)
+    .addField('$$wiki',"Search a word in wikipedia (Unstable)",true)
+    .setFooter('Happy \'Discording\'!!', botimg)
     .setTimestamp();
 /////////////////////////////////////////////////
 
 //This is for console info.... once, it is up.
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    client.user.setActivity(`to ${bot_prefix}help`,{type:"Listening"})
 });
 
 ///Event catcher for message
 client.on('message', (msg) => {
     //Filtering out to check for only the ones intended.
-    if (msg.content.startsWith(bot_pr)) {
-      //For utility in program flow and multi word comment, command terminates with '-' 
-        let cmd_end_index = msg.content.indexOf('-');
-        //Separating the values between bot prefix ('$$') and termination character ('-')
-        let cmd = msg.content.substring(2, cmd_end_index);
+    if (msg.content.startsWith(bot_prefix)) {
+      msgargs = msg.content.substr(2).split(' ')
+      console.log(msgargs)
         //Switch to differentiate bot commands 
-        switch (cmd) {
+        switch (msgargs[0]) {
             case "help":
 
                 msg.channel.send(msg.author, helpEmbed);
@@ -56,7 +54,7 @@ client.on('message', (msg) => {
 
             case "code":
 
-                msg.channel.send("Check my source code at GH(GitHub)\n;-) https://github.com/Nafi-Amaan-Hossain/discord-bot-js/");
+                msg.channel.send("Check my source code at GH(GitHub)\n;-)  https://github.com/Nafi-Amaan-Hossain/discord-bot-js");
 
                 break;
 
@@ -69,11 +67,57 @@ client.on('message', (msg) => {
 
                 break;
 
+            case "wiki":
+              if (msgargs[1] !== undefined) {
+                  wikitldr(msgargs[1]).then(result => {
+                    if ((result !== '') && ( result !== undefined) && (result !==null) ) {
+                        result = result.extract_html
+                        msg.channel.send(removeTags(result))
+                    }else{
+                      msg.channel.send(`Found nothing about"${msgargs[1]}"`)
+                    }
+                })
+                } else {
+                msg.channel.send(`Please specify something to search. Like ${bot_prefix}wiki javaScript`)
+                }
+              break;
+
             case "joke":
+              if((msgargs[1] === undefined)){
                let randjoke = randomJoke();
                msg.channel.send('*'+ randjoke.setup + "* " + randjoke.punchline);
                delete randjoke;
+
+              }else if ((msgargs[1].toLowerCase()==="general") || (msgargs[1].toLowerCase().startsWith("g"))){
+                 
+                 let genjoke = randomGeneralJoke();
+                 msg.channel.send(`**${genjoke.setup}** ${genjoke.punchline}`);
+               
+               } else if((msgargs[1].toLowerCase()=="programming")||(msgargs[1].toLowerCase().startsWith("p"))){
+                 
+                 let progjoke = randomProgrammingJoke();
+                 msg.channel.send(`**${progjoke.setup}** ${progjoke.punchline}`);
+                 delete progjoke;
+
+               }else if((msgargs[1].toLowerCase()=="knock")||(msgargs[1].toLowerCase().startsWith("k"))){
+                 
+                 let knockjoke = randomKnockJoke();
+                 msg.channel.send(`**${knockjoke.setup}** ${knockjoke.punchline}`);
+                 delete knockjoke;
+              
+               } else {
+
+               let randjoke = randomJoke();
+               msg.channel.send('*'+ randjoke.setup + "* " + randjoke.punchline);
+               delete randjoke;
+               
+               }
                break;
+
+            default:
+                msg.channel.send(msg.author, helpEmbed);
+
+                break;
 
 
         }
@@ -83,14 +127,16 @@ client.on('message', (msg) => {
 
 });
 
-client.on('guildMemberAdd', member => {
-  // Send the message to a designated channel on a server:
-  const channel = member.guild.channels.cache.find(ch => ch.name === 'welcome');
-  // Do nothing if the channel wasn't found on this server
-  if (!channel) return;
-  // Send the message, mentioning the member
-  channel.send(`Welcome to the server, ${member}!!!!!! `);
-});
+removeTags = (str) => { 
+    if ((str===null) || (str==='')) 
+        return "Oops!! Something went wrong!! Try https://en.wikipedia.org/"; 
+    else
+        str = str.toString(); 
+          
+    // Regular expression to identify HTML tags in  the text and replace
+    // HTML tag with a null string. 
+    return str.replace( /(<([^>]+)>)/ig, ''); 
+} 
 
 client.login(process.env.BOT_TOKEN);
 
@@ -116,8 +162,8 @@ client.login(process.env.BOT_TOKEN);
 
 ////////////////////////
 
-/* https://repl.it requires an http server to be active,
- in order to to keep the code from terminating. */
+/* https://repl.it requires an http server running
+ in order to keep the program from terminating. */
 //Starting the keep alive express code. 
 const express = require('express');
 const LimitingMiddleware = require('limiting-middleware');
